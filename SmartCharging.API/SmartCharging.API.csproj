@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.9" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     </ItemGroup>
@@ -15,6 +16,10 @@
       <ProjectReference Include="..\SmartCharging.Domain\SmartCharging.Domain.csproj" />
       <ProjectReference Include="..\SmartCharging.Persistence\SmartCharging.Persistence.csproj" />
       <ProjectReference Include="..\SmartCharging.Service\SmartCharging.Service.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Helpers\" />
     </ItemGroup>
 
 </Project>

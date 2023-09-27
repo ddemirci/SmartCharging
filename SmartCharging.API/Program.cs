@@ -1,5 +1,6 @@
 // using SmartCharging.Contracts.Interfaces;
 
+using System.Reflection;
 using System.Text.Json.Serialization;
 using SmartCharging.Domain.Entities;
 using SmartCharging.Persistence.Context;
@@ -8,6 +9,11 @@ using SmartCharging.Service;
 using SmartCharging.Service.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
+
+IEnumerable<Assembly> mapperAssemblies = new[]
+{
+    AppDomain.CurrentDomain.Load("SmartCharging.Domainn"),
+};
 
 // Add services to the container.
 
@@ -19,12 +25,14 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<SmartChargingDbContext>();
-
+builder.Services.AddAutoMapper(mapperAssemblies);
 // Registering Repositories
 builder.Services.AddTransient(typeof(IRepository<Group>), typeof(GroupRepository));
+builder.Services.AddTransient(typeof(IRepository<ChargeStation>), typeof(ChargeStationRepository));
 
 // Registering Services
 builder.Services.AddTransient(typeof(ISmartChargingService<Group>), typeof(SmartChargingService<Group>));
+builder.Services.AddTransient(typeof(ISmartChargingService<ChargeStation>), typeof(SmartChargingService<ChargeStation>));
 
 var app = builder.Build();
 
