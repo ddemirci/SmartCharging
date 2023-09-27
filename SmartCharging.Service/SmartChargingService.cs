@@ -14,19 +14,19 @@ public class SmartChargingService<T> : ISmartChargingService<T> where T : class
         _repository = repository;
     }
 
-    public Task<T> Get(Guid id, CancellationToken ct = new())
+    public Task<T?> Get(Guid id, CancellationToken ct = new())
     {
         return _repository.Get(id,ct);
     }
 
     public Task<T> Create(T entity, CancellationToken ct = new())
     {
-        throw new NotImplementedException();
+        return _repository.Add(entity, ct);
     }
 
-    public Task<T> Update(T entity, CancellationToken ct = new())
+    public T Update(T entity, CancellationToken ct = new())
     {
-        throw new NotImplementedException();
+        return _repository.Update(entity, ct);
     }
 
     public Task<T> Delete(T entity, CancellationToken ct = new())
