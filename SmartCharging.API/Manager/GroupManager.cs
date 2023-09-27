@@ -19,6 +19,14 @@ public class GroupManager
         _mapper = mapper;
     }
 
+    public async Task<SmartChargingApiResponse<GroupDto>> GetGroup(Guid id)
+    {
+        var group = await _groupService.Get(id);
+        return group == null 
+            ? new SmartChargingApiResponse<GroupDto>(message: "Given Group could not be found") 
+            : new SmartChargingApiResponse<GroupDto>(data: _mapper.Map<GroupDto>(group));
+    }
+
     public async Task<SmartChargingApiResponse<GroupDto>> CreateGroup(CreateGroupRequest request)
     {
         var group = _mapper.Map<Group>(request);
@@ -42,5 +50,14 @@ public class GroupManager
         // var updatedEntity = _mapper.Map(request, group);
         var returnedEntity = _groupService.Update(group);
         return new SmartChargingApiResponse<GroupDto>(_mapper.Map<GroupDto>(returnedEntity));
+    }
+    
+    public async Task<SmartChargingApiResponse<GroupDto>> DeleteGroup(Guid id)
+    {
+        var group = await _groupService.Get(id);
+        if (group == null)
+            return new SmartChargingApiResponse<GroupDto>(message: "Given Group could not be found");
+        var deletedEntry = await _groupService.Delete(group);
+        return new SmartChargingApiResponse<GroupDto>(_mapper.Map<GroupDto>(deletedEntry));
     }
 }
