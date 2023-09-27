@@ -30,13 +30,15 @@ public class ChargeStationRepository : IRepository<ChargeStation>
 
     public ChargeStation Update(ChargeStation entity, CancellationToken ct = new())
     {
-        return _chargeStationDbSet.Update(entity).Entity;
+        var resultEntity= _chargeStationDbSet.Update(entity).Entity;
+        _dbContext.SaveChanges();
+        return resultEntity;
     }
 
     public ChargeStation Delete(ChargeStation entity, CancellationToken ct = new())
     {
-        var x = _chargeStationDbSet.Remove(entity).Entity; // Is it going to delete everything?
+        var resultEntity = _chargeStationDbSet.Remove(entity).Entity;
         _dbContext.SaveChanges();
-        return x;
+        return resultEntity;
     }
 }

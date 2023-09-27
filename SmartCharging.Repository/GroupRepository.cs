@@ -25,13 +25,16 @@ public class GroupRepository : IRepository<Group>
 
     public async Task<Group> Add(Group entity, CancellationToken ct = new())
     {
-        var entityEntry = await _groupDbSet.AddAsync(entity, ct);
-        return entityEntry.Entity;
+        var addedEntity = await _groupDbSet.AddAsync(entity, ct);
+        await _dbContext.SaveChangesAsync(ct);
+        return addedEntity.Entity;
     }
 
     public Group Update(Group entity, CancellationToken ct = new())
     {
-        return _groupDbSet.Update(entity).Entity;
+        var updatedEntry =_groupDbSet.Update(entity).Entity;
+        _dbContext.SaveChanges();
+        return updatedEntry;
     }
 
     public Group Delete(Group entity, CancellationToken ct = new())
