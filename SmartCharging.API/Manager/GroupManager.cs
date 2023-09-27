@@ -19,18 +19,18 @@ public class GroupManager
         _mapper = mapper;
     }
 
-    public async Task<SmartChargingResponse<GroupDto>> CreateGroup(CreateGroupRequest request)
+    public async Task<SmartChargingApiResponse<GroupDto>> CreateGroup(CreateGroupRequest request)
     {
         var group = _mapper.Map<Group>(request);
         var entity = await _groupService.Create(group);
-        return new SmartChargingResponse<GroupDto>(_mapper.Map<GroupDto>(entity));
+        return new SmartChargingApiResponse<GroupDto>(_mapper.Map<GroupDto>(entity));
     }
     
-    public async Task<SmartChargingResponse<GroupDto>> UpdateGroup(Guid id, UpdateGroupRequest request)
+    public async Task<SmartChargingApiResponse<GroupDto>> UpdateGroup(Guid id, UpdateGroupRequest request)
     {
         var group = await _groupService.Get(id);
         if (group == null)
-            return new SmartChargingResponse<GroupDto>(message: "Given Group could not be found");
+            return new SmartChargingApiResponse<GroupDto>(message: "Given Group could not be found");
 
         // TODO:Automapper couldn't handle nullable integer value condition and mapped CapacityInAmps as always 0 when the request did not have.
         if (request.Name != null)
@@ -41,6 +41,6 @@ public class GroupManager
         
         // var updatedEntity = _mapper.Map(request, group);
         var returnedEntity = _groupService.Update(group);
-        return new SmartChargingResponse<GroupDto>(_mapper.Map<GroupDto>(returnedEntity));
+        return new SmartChargingApiResponse<GroupDto>(_mapper.Map<GroupDto>(returnedEntity));
     }
 }
