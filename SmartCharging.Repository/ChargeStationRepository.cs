@@ -15,11 +15,11 @@ public class ChargeStationRepository : IRepository<ChargeStation>
         _chargeStationDbSet = dbContext.ChargeStations;
     }
 
-    public async Task<ChargeStation> Get(Guid id, CancellationToken ct = new())
+    public async Task<ChargeStation?> Get(Guid id, CancellationToken ct = new())
     {
         return await _chargeStationDbSet.Where(g => g.Id == id)
             .Include(g => g.Connectors)
-            .FirstOrDefaultAsync(ct) ?? new ChargeStation();
+            .FirstOrDefaultAsync(ct);
     }
 
     public async Task<ChargeStation> Add(ChargeStation entity, CancellationToken ct = new())

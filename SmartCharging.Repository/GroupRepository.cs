@@ -15,12 +15,12 @@ public class GroupRepository : IRepository<Group>
         _groupDbSet = dbContext.Groups;
     }
 
-    public async Task<Group> Get(Guid id, CancellationToken ct = new())
+    public async Task<Group?> Get(Guid id, CancellationToken ct = new())
     {
         return await _groupDbSet.Where(g => g.Id == id)
             .Include(g => g.ChargeStations)
             .ThenInclude(cs => cs.Connectors)
-            .FirstOrDefaultAsync(ct) ?? new Group();
+            .FirstOrDefaultAsync(ct);
     }
 
     public async Task<Group> Add(Group entity, CancellationToken ct = new())
