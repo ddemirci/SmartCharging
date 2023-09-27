@@ -4,7 +4,6 @@ public class ChargeStationDto
 {
     public Guid Id { get; set; }
     public string Name { get; set; }
-    public IList<ConnectorDto> Connectors { get; }
-    public GroupDto Group { get; set; }
+    public ICollection<ConnectorDto> Connectors { get; } = new List<ConnectorDto>();
     public Guid GroupId { get; set; }
 }
