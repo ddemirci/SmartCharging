@@ -29,8 +29,9 @@ public class SmartChargingService<T> : ISmartChargingService<T> where T : class
         throw new NotImplementedException();
     }
 
-    public Task Delete(T entity, CancellationToken ct = new())
+    public Task<T> Delete(T entity, CancellationToken ct = new())
     {
-        throw new NotImplementedException();
+        var x = _repository.Delete(entity, ct);
+        return Task.FromResult(x);
     }
 }
