@@ -1,4 +1,5 @@
 using AutoMapper;
+using SmartCharging.API.Requests.ChargeStation;
 using SmartCharging.API.Requests.Group;
 using SmartCharging.API.Response;
 using SmartCharging.Domain.DTOs;
@@ -77,6 +78,35 @@ public class GroupManager
         return chargeStation == null 
             ? new SmartChargingApiResponse<ChargeStationDto>(message: "Given ChargeStation could not be found") 
             : new SmartChargingApiResponse<ChargeStationDto>(data: _mapper.Map<ChargeStationDto>(chargeStation));
+    }
+    
+    public async Task<SmartChargingApiResponse<ChargeStationDto>> CreateChargeStation(Guid id, CreateChargeStationRequest request)
+    {
+        var group = await _groupService.Get(id);
+        if (group == null)
+            return new SmartChargingApiResponse<ChargeStationDto>(message: "Given Group could not be found");
+
+        // Get current capacity and check for max
+        var currentCapacity = group.ChargeStations.SelectMany(x => x.Connectors).Sum(x => x.MaxCurrentInAmps);
+        if (currentCapacity + request.ConnectorMaxCurrentInAmps > group.CapacityInAmps)
+            return new SmartChargingApiResponse<ChargeStationDto>(message: "Given ChargeStation could not be added. Reason: Capacity exceeded");
+        
+        var chargeStation = new ChargeStation
+        {
+            Name = request.Name,
+            Connectors = new List<Connector>
+            { 
+                new() 
+                {
+                    Id = 1,
+                    MaxCurrentInAmps = request.ConnectorMaxCurrentInAmps
+                }
+            }
+        };
+        
+        group.ChargeStations.Add(chargeStation);
+        _groupService.Update(group);
+        return new SmartChargingApiResponse<ChargeStationDto>(data:_mapper.Map<ChargeStationDto>(chargeStation));
     }
     
     #endregion
