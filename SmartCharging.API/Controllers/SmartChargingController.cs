@@ -66,5 +66,11 @@ public class SmartChargingController : ControllerBase
         return await _groupManager.UpdateChargeStation(id, chargeStationId, request);
     }
     
+    [HttpDelete("{id:guid}/group/{chargeStationId:guid}/chargeStation")]
+    public async Task<SmartChargingApiResponse<ChargeStationDto>> DeleteChargeStation(Guid id, Guid chargeStationId)
+    {
+        return await _groupManager.DeleteChargeStation(id, chargeStationId);
+    }
+    
     #endregion
 }
