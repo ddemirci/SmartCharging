@@ -60,5 +60,11 @@ public class SmartChargingController : ControllerBase
         return await _groupManager.CreateChargeStation(id, request);
     }
     
+    [HttpPut("{id:guid}/group/{chargeStationId:guid}/chargeStation")]
+    public async Task<SmartChargingApiResponse<ChargeStationDto>> UpdateChargeStation(Guid id, Guid chargeStationId, [FromBody] UpdateChargeStationRequest request)
+    {
+        return await _groupManager.UpdateChargeStation(id, chargeStationId, request);
+    }
+    
     #endregion
 }
