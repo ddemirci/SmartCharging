@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SmartCharging.API.Manager;
 using SmartCharging.API.Requests.ChargeStation;
+using SmartCharging.API.Requests.Connector;
 using SmartCharging.API.Requests.Group;
 using SmartCharging.API.Response;
 using SmartCharging.Domain.DTOs;
@@ -73,4 +74,20 @@ public class SmartChargingController : ControllerBase
     }
     
     #endregion
+    
+    #region Connector
+    
+    [HttpGet("{id:guid}/group/{chargeStationId:guid}/chargeStation/{connectorId:int}/connector")]
+    public async Task<SmartChargingApiResponse<ConnectorDto>> GetConnector(Guid id, Guid chargeStationId, int connectorId)
+    {
+        return await _groupManager.GetConnector(id, chargeStationId, connectorId);
+    }
+    
+    [HttpPost("{id:guid}/group/{chargeStationId:guid}/chargeStation/connector")]
+    public async Task<SmartChargingApiResponse<ConnectorDto>> CreateConnector(Guid id, Guid chargeStationId, CreateConnectorRequest request)
+    {
+        return await _groupManager.CreateConnector(id, chargeStationId,request);
+    }
+    
+    #endregion Connector
 }
