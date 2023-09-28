@@ -127,5 +127,20 @@ public class GroupManager
         return new SmartChargingApiResponse<ChargeStationDto>(data:_mapper.Map<ChargeStationDto>(chargeStation));
     }
     
+    public async Task<SmartChargingApiResponse<ChargeStationDto>> DeleteChargeStation(Guid id, Guid chargeStationId)
+    {
+        var group = await _groupService.Get(id);
+        if (group == null)
+            return new SmartChargingApiResponse<ChargeStationDto>(message: "Given Group could not be found");
+
+        var chargeStation = group.ChargeStations.FirstOrDefault(x => x.Id == chargeStationId);
+        if (chargeStation == null)
+            return new SmartChargingApiResponse<ChargeStationDto>(message: "Given ChargeStation could not be found");
+
+        group.ChargeStations.Remove(chargeStation);
+        _groupService.Update(group);
+        return new SmartChargingApiResponse<ChargeStationDto>(data:_mapper.Map<ChargeStationDto>(chargeStation));
+    }
+    
     #endregion
 }
