@@ -1,5 +1,6 @@
 using AutoMapper;
 using SmartCharging.API.Requests.ChargeStation;
+using SmartCharging.API.Requests.Connector;
 using SmartCharging.API.Requests.Group;
 using SmartCharging.API.Response;
 using SmartCharging.Domain.DTOs;
@@ -141,6 +142,62 @@ public class GroupManager
         _groupService.Update(group);
         return new SmartChargingApiResponse<ChargeStationDto>(data:_mapper.Map<ChargeStationDto>(chargeStation));
     }
+    
+    #endregion
+
+    #region Connector
+
+    public async Task<SmartChargingApiResponse<ConnectorDto>> GetConnector(Guid id, Guid chargeStationId, int connectorId)
+    {
+        var group = await _groupService.Get(id);
+        if (group == null)
+            return new SmartChargingApiResponse<ConnectorDto>(message: "Given Group could not be found");
+
+        var chargeStation = group.ChargeStations.FirstOrDefault(x => x.Id == chargeStationId);
+        if (chargeStation == null)
+            return new SmartChargingApiResponse<ConnectorDto>(message: "Given ChargeStation could not be found");
+
+        var connector = chargeStation.Connectors.FirstOrDefault(x => x.Id == connectorId);
+        return connector == null
+            ? new SmartChargingApiResponse<ConnectorDto>(message: "Given Connector could not be found") 
+            : new SmartChargingApiResponse<ConnectorDto>(data: _mapper.Map<ConnectorDto>(connector));
+    }
+    
+    public async Task<SmartChargingApiResponse<ConnectorDto>> CreateConnector(Guid id, Guid chargeStationId, CreateConnectorRequest request)
+    {
+        var group = await _groupService.Get(id);
+        if (group == null)
+            return new SmartChargingApiResponse<ConnectorDto>(message: "Given Group could not be found");
+
+        var chargeStation = group.ChargeStations.FirstOrDefault(x => x.Id == chargeStationId);
+        if (chargeStation == null)
+            return new SmartChargingApiResponse<ConnectorDto>(message: "Given ChargeStation could not be found");
+
+        var connector = new Connector
+        {
+            Id = FindAvailableSlotForConnector(chargeStation),
+            MaxCurrentInAmps = request.MaxCurrentInAmps
+        };
+        
+        chargeStation.Connectors.Add(connector);
+        _groupService.Update(group);
+        return new SmartChargingApiResponse<ConnectorDto>(data:_mapper.Map<ConnectorDto>(connector));
+    }
+
+    private int FindAvailableSlotForConnector(ChargeStation chargeStation)
+    {
+        if (chargeStation.Connectors.Count >= 5)
+            return 0; // Means no available slot
+
+        var occupiedSlots = chargeStation.Connectors.Select(x => x.Id).ToHashSet();
+        for (var i = 1; i <= 5; i++)
+        {
+            if (!occupiedSlots.Contains(i)) return i;
+        }
+
+        return 0;
+    }
+    
     
     #endregion
 }
