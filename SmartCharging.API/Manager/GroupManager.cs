@@ -19,6 +19,8 @@ public class GroupManager
         _mapper = mapper;
     }
 
+    #region Group
+
     public async Task<SmartChargingApiResponse<GroupDto>> GetGroup(Guid id)
     {
         var group = await _groupService.Get(id);
@@ -60,4 +62,10 @@ public class GroupManager
         var deletedEntry = await _groupService.Delete(group);
         return new SmartChargingApiResponse<GroupDto>(_mapper.Map<GroupDto>(deletedEntry));
     }
+    
+    #endregion
+
+    #region ChargeStation
+
+    #endregion
 }
