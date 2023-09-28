@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SmartCharging.API.Manager;
+using SmartCharging.API.Requests.ChargeStation;
 using SmartCharging.API.Requests.Group;
 using SmartCharging.API.Response;
 using SmartCharging.Domain.DTOs;
@@ -51,6 +52,12 @@ public class SmartChargingController : ControllerBase
     public async Task<SmartChargingApiResponse<ChargeStationDto>> GetChargeStation(Guid id, Guid chargeStationId)
     {
         return await _groupManager.GetChargeStation(id, chargeStationId);
+    }
+    
+    [HttpPost("{id:guid}/group/chargeStation")]
+    public async Task<SmartChargingApiResponse<ChargeStationDto>> CreateChargeStation(Guid id, [FromBody] CreateChargeStationRequest request)
+    {
+        return await _groupManager.CreateChargeStation(id, request);
     }
     
     #endregion
