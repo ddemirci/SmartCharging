@@ -67,5 +67,17 @@ public class GroupManager
 
     #region ChargeStation
 
+    public async Task<SmartChargingApiResponse<ChargeStationDto>> GetChargeStation(Guid id, Guid chargeStationId)
+    {
+        var group = await _groupService.Get(id);
+        if (group == null)
+            return new SmartChargingApiResponse<ChargeStationDto>(message: "Given Group could not be found");
+
+        var chargeStation = group.ChargeStations.FirstOrDefault(x => x.Id == chargeStationId);
+        return chargeStation == null 
+            ? new SmartChargingApiResponse<ChargeStationDto>(message: "Given ChargeStation could not be found") 
+            : new SmartChargingApiResponse<ChargeStationDto>(data: _mapper.Map<ChargeStationDto>(chargeStation));
+    }
+    
     #endregion
 }
