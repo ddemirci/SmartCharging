@@ -44,4 +44,14 @@ public class SmartChargingController : ControllerBase
     }
     
     #endregion Group
+    
+    #region ChargeStation
+    
+    [HttpGet("{id:guid}/group/{chargeStationId:guid}/chargeStation")]
+    public async Task<SmartChargingApiResponse<ChargeStationDto>> GetChargeStation(Guid id, Guid chargeStationId)
+    {
+        return await _groupManager.GetChargeStation(id, chargeStationId);
+    }
+    
+    #endregion
 }
