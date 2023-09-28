@@ -20,25 +20,25 @@ public class SmartChargingController : ControllerBase
     #region Group
 
     [HttpGet("{id:guid}/group")]
-    public async Task<SmartChargingApiResponse<GroupDto>> Get(Guid id)
+    public async Task<SmartChargingApiResponse<GroupDto>> GetGroup(Guid id)
     {
         return await _groupManager.GetGroup(id);
     }
     
     [HttpPost("group")]
-    public async Task<SmartChargingApiResponse<GroupDto>> Create([FromBody] CreateGroupRequest request)
+    public async Task<SmartChargingApiResponse<GroupDto>> CreateGroup([FromBody] CreateGroupRequest request)
     {
         return await _groupManager.CreateGroup(request);
     }
     
     [HttpPut("{id:guid}/group")]
-    public async Task<SmartChargingApiResponse<GroupDto>> Update(Guid id, [FromBody] UpdateGroupRequest request)
+    public async Task<SmartChargingApiResponse<GroupDto>> UpdateGroup(Guid id, [FromBody] UpdateGroupRequest request)
     {
         return await _groupManager.UpdateGroup(id, request);
     }
     
     [HttpDelete("{id:guid}/group")]
-    public async Task<SmartChargingApiResponse<GroupDto>> Delete(Guid id)
+    public async Task<SmartChargingApiResponse<GroupDto>> DeleteGroup(Guid id)
     {
         return await _groupManager.DeleteGroup(id);
     }
