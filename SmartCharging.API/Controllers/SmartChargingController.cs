@@ -17,6 +17,8 @@ public class SmartChargingController : ControllerBase
         _groupManager = groupManager;
     }
 
+    #region Group
+
     [HttpGet("{id:guid}/group")]
     public async Task<SmartChargingApiResponse<GroupDto>> Get(Guid id)
     {
@@ -40,4 +42,6 @@ public class SmartChargingController : ControllerBase
     {
         return await _groupManager.DeleteGroup(id);
     }
+    
+    #endregion Group
 }
