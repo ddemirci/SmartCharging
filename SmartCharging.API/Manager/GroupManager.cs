@@ -209,7 +209,7 @@ public class GroupManager
         //Check for max amps
         var currentAmps = GetCurrentCapacityOfGroup(group);
         if(currentAmps - connector.MaxCurrentInAmps + request.MaxCurrentInAmps > group.CapacityInAmps)
-            return new SmartChargingApiResponse<ConnectorDto>(message: "Given Connector could not be added. Reason: Capacity exceeded");
+            return new SmartChargingApiResponse<ConnectorDto>(message: "Given Connector could not be updated. Reason: Capacity exceeded");
 
         connector.MaxCurrentInAmps = request.MaxCurrentInAmps;
         _groupService.Update(group);
