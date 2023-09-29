@@ -231,6 +231,10 @@ public class GroupManager
         if (connector == null)
             return new SmartChargingApiResponse<ConnectorDto>(message: "Given Connector could not be found");
 
+        // There have to be at least one connector in the charging station. The last connector should not be removed.
+        if(chargeStation.Connectors.Count == 1)
+            return new SmartChargingApiResponse<ConnectorDto>(message: "Given Connector could not be removed. Reason: It is the last connector of charge station");
+        
         chargeStation.Connectors.Remove(connector);
         _groupService.Update(group);
         return new SmartChargingApiResponse<ConnectorDto>(data:_mapper.Map<ConnectorDto>(connector));
