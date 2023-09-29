@@ -88,7 +88,7 @@ public class GroupManager
             return new SmartChargingApiResponse<ChargeStationDto>(message: "Given Group could not be found");
 
         // Get current capacity and check for max
-        var currentCapacity = group.ChargeStations.SelectMany(x => x.Connectors).Sum(x => x.MaxCurrentInAmps);
+        var currentCapacity = GetCurrentCapacityOfGroup(group);
         if (currentCapacity + request.ConnectorMaxCurrentInAmps > group.CapacityInAmps)
             return new SmartChargingApiResponse<ChargeStationDto>(message: "Given ChargeStation could not be added. Reason: Capacity exceeded");
         
@@ -144,7 +144,6 @@ public class GroupManager
     }
     
     #endregion
-
     #region Connector
 
     public async Task<SmartChargingApiResponse<ConnectorDto>> GetConnector(Guid id, Guid chargeStationId, int connectorId)
@@ -174,7 +173,7 @@ public class GroupManager
             return new SmartChargingApiResponse<ConnectorDto>(message: "Given ChargeStation could not be found");
 
         //Check for max amps
-        var currentAmps = group.ChargeStations.SelectMany(x => x.Connectors).Sum(x => x.MaxCurrentInAmps);
+        var currentAmps = GetCurrentCapacityOfGroup(group);
         if(currentAmps + request.MaxCurrentInAmps > group.CapacityInAmps)
             return new SmartChargingApiResponse<ConnectorDto>(message: "Given Connector could not be added. Reason: Capacity exceeded");
 
@@ -208,7 +207,7 @@ public class GroupManager
             return new SmartChargingApiResponse<ConnectorDto>(message: "Given Connector could not be found");
        
         //Check for max amps
-        var currentAmps = group.ChargeStations.SelectMany(x => x.Connectors).Sum(x => x.MaxCurrentInAmps);
+        var currentAmps = GetCurrentCapacityOfGroup(group);
         if(currentAmps - connector.MaxCurrentInAmps + request.MaxCurrentInAmps > group.CapacityInAmps)
             return new SmartChargingApiResponse<ConnectorDto>(message: "Given Connector could not be added. Reason: Capacity exceeded");
 
@@ -237,7 +236,7 @@ public class GroupManager
         return new SmartChargingApiResponse<ConnectorDto>(data:_mapper.Map<ConnectorDto>(connector));
     }
 
-    private int FindAvailableSlotForConnector(ChargeStation chargeStation)
+    private static int FindAvailableSlotForConnector(ChargeStation chargeStation)
     {
         if (chargeStation.Connectors.Count >= 5)
             return 0; // Means no available slot
@@ -250,7 +249,12 @@ public class GroupManager
 
         return 0;
     }
-    
+
+    private static int GetCurrentCapacityOfGroup(Group group)
+    {
+        return group.ChargeStations.SelectMany(x => x.Connectors)
+            .Sum(x => x.MaxCurrentInAmps);
+    }
     
     #endregion
 }
