@@ -24,14 +24,15 @@ public class SmartChargingService<T> : ISmartChargingService<T> where T : class
         return _repository.Add(entity, ct);
     }
 
-    public T Update(T entity, CancellationToken ct = new())
+    public Task<T> Update(T entity, CancellationToken ct = new())
     {
-        return _repository.Update(entity, ct);
+        var updatedEntry = _repository.Update(entity, ct);
+        return Task.FromResult(updatedEntry);
     }
 
     public Task<T> Delete(T entity, CancellationToken ct = new())
     {
-        var x = _repository.Delete(entity, ct);
-        return Task.FromResult(x);
+        var deletedEntry = _repository.Delete(entity, ct);
+        return Task.FromResult(deletedEntry);
     }
 }

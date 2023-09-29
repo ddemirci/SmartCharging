@@ -51,7 +51,7 @@ public class GroupManager
             group.CapacityInAmps = request.CapacityInAmps.Value;
         
         // var updatedEntity = _mapper.Map(request, group);
-        var returnedEntity = _groupService.Update(group);
+        var returnedEntity = await _groupService.Update(group);
         return Results.Ok(_mapper.Map<GroupDto>(returnedEntity));
     }
     
@@ -105,7 +105,7 @@ public class GroupManager
         };
         
         group.ChargeStations.Add(chargeStation);
-        _groupService.Update(group);
+        await _groupService.Update(group);
         return Results.Created("chargeStation",_mapper.Map<ChargeStationDto>(chargeStation));
     }
     
@@ -123,7 +123,7 @@ public class GroupManager
         // TODO: Handle with automapper
         chargeStation.Name = request.Name;
 
-        _groupService.Update(group);
+        await _groupService.Update(group);
         return Results.Ok(_mapper.Map<ChargeStationDto>(chargeStation));
     }
     
@@ -138,7 +138,7 @@ public class GroupManager
             return Results.NotFound("Given ChargeStation could not be found");
 
         group.ChargeStations.Remove(chargeStation);
-        _groupService.Update(group);
+        await _groupService.Update(group);
         return Results.Ok(_mapper.Map<ChargeStationDto>(chargeStation));
     }
     
@@ -186,7 +186,7 @@ public class GroupManager
         };
         
         chargeStation.Connectors.Add(connector);
-        _groupService.Update(group);
+        await _groupService.Update(group);
         return Results.Ok(_mapper.Map<ConnectorDto>(connector));
     }
     
@@ -211,7 +211,7 @@ public class GroupManager
             return Results.UnprocessableEntity("Given Connector could not be updated. Reason: Capacity exceeded");
 
         connector.MaxCurrentInAmps = request.MaxCurrentInAmps;
-        _groupService.Update(group);
+        await _groupService.Update(group);
         return Results.Ok(_mapper.Map<ConnectorDto>(connector));
     }
     
@@ -235,7 +235,7 @@ public class GroupManager
             return Results.UnprocessableEntity("Given Connector could not be removed. Reason: It is the last connector of charge station");
         
         chargeStation.Connectors.Remove(connector);
-        _groupService.Update(group);
+        await _groupService.Update(group);
         return Results.Ok(_mapper.Map<ConnectorDto>(connector));
     }
 
