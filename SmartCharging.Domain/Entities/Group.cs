@@ -7,5 +7,5 @@ public class Group
     public int CapacityInAmps { get; set; }
     
     // Relationships
-    public ICollection<ChargeStation> ChargeStations { get; }
+    public ICollection<ChargeStation> ChargeStations { get; set; }
 }
