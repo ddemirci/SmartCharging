@@ -46,9 +46,15 @@ public class GroupManager
         // TODO:Automapper couldn't handle nullable integer value condition and mapped CapacityInAmps as always 0 when the request did not have.
         if (request.Name != null)
             group.Name = request.Name;
-        
+
         if (request.CapacityInAmps != null)
+        {
+            //Fetch current capacity
+            var currentCapacity = GetCurrentCapacityOfGroup(group);
+            if (currentCapacity > request.CapacityInAmps.Value)
+                return Results.UnprocessableEntity("Given Group could not be updated. Reason: New capacity is insufficient");
             group.CapacityInAmps = request.CapacityInAmps.Value;
+        }
         
         // var updatedEntity = _mapper.Map(request, group);
         var returnedEntity = await _groupService.Update(group);
