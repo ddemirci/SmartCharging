@@ -1,20 +1,24 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using SmartCharging.Domain.Entities;
 
 namespace SmartCharging.Persistence.Context;
 
 public class SmartChargingDbContext : DbContext
 {
+    private readonly IConfiguration _configuration;
     public DbSet<Group> Groups { get; set; }
     public DbSet<ChargeStation> ChargeStations { get; set; }
     public DbSet<Connector> Connectors { get; set; }
 
+    public SmartChargingDbContext(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        // TODO: Put the credentials into config
-        optionsBuilder.UseMySQL(
-            "server=localhost;port=3306;database=SmartCharging;user=root;password=admin123456");
+        optionsBuilder.UseMySQL(_configuration.GetConnectionString("SmartChargingDb") ?? string.Empty);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
