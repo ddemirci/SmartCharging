@@ -173,6 +173,14 @@ public class GroupManager
         if (chargeStation == null)
             return new SmartChargingApiResponse<ConnectorDto>(message: "Given ChargeStation could not be found");
 
+        //Check for max amps
+        var currentAmps = group.ChargeStations.SelectMany(x => x.Connectors).Sum(x => x.MaxCurrentInAmps);
+        if(currentAmps + request.MaxCurrentInAmps > group.CapacityInAmps)
+            return new SmartChargingApiResponse<ConnectorDto>(message: "Given Connector could not be added. Reason: Capacity exceeded");
+
+        var connectorId = FindAvailableSlotForConnector(chargeStation);
+        if(connectorId == 0)
+            return new SmartChargingApiResponse<ConnectorDto>(message: "Given Connector could not be added. Reason: There is no room in ChargeStation");
         var connector = new Connector
         {
             Id = FindAvailableSlotForConnector(chargeStation),
@@ -180,6 +188,51 @@ public class GroupManager
         };
         
         chargeStation.Connectors.Add(connector);
+        _groupService.Update(group);
+        return new SmartChargingApiResponse<ConnectorDto>(data:_mapper.Map<ConnectorDto>(connector));
+    }
+    
+    public async Task<SmartChargingApiResponse<ConnectorDto>> UpdateConnector(Guid id, Guid chargeStationId, 
+        int connectorId, UpdateConnectorRequest request)
+    {
+        var group = await _groupService.Get(id);
+        if (group == null)
+            return new SmartChargingApiResponse<ConnectorDto>(message: "Given Group could not be found");
+
+        var chargeStation = group.ChargeStations.FirstOrDefault(x => x.Id == chargeStationId);
+        if (chargeStation == null)
+            return new SmartChargingApiResponse<ConnectorDto>(message: "Given ChargeStation could not be found");
+
+        var connector = chargeStation.Connectors.FirstOrDefault(x => x.Id == connectorId);
+        if (connector == null)
+            return new SmartChargingApiResponse<ConnectorDto>(message: "Given Connector could not be found");
+       
+        //Check for max amps
+        var currentAmps = group.ChargeStations.SelectMany(x => x.Connectors).Sum(x => x.MaxCurrentInAmps);
+        if(currentAmps - connector.MaxCurrentInAmps + request.MaxCurrentInAmps > group.CapacityInAmps)
+            return new SmartChargingApiResponse<ConnectorDto>(message: "Given Connector could not be added. Reason: Capacity exceeded");
+
+        connector.MaxCurrentInAmps = request.MaxCurrentInAmps;
+        _groupService.Update(group);
+        return new SmartChargingApiResponse<ConnectorDto>(data:_mapper.Map<ConnectorDto>(connector));
+    }
+    
+    public async Task<SmartChargingApiResponse<ConnectorDto>> DeleteConnector(Guid id,
+        Guid chargeStationId, int connectorId)
+    {
+        var group = await _groupService.Get(id);
+        if (group == null)
+            return new SmartChargingApiResponse<ConnectorDto>(message: "Given Group could not be found");
+
+        var chargeStation = group.ChargeStations.FirstOrDefault(x => x.Id == chargeStationId);
+        if (chargeStation == null)
+            return new SmartChargingApiResponse<ConnectorDto>(message: "Given ChargeStation could not be found");
+
+        var connector = chargeStation.Connectors.FirstOrDefault(x => x.Id == connectorId);
+        if (connector == null)
+            return new SmartChargingApiResponse<ConnectorDto>(message: "Given Connector could not be found");
+
+        chargeStation.Connectors.Remove(connector);
         _groupService.Update(group);
         return new SmartChargingApiResponse<ConnectorDto>(data:_mapper.Map<ConnectorDto>(connector));
     }
