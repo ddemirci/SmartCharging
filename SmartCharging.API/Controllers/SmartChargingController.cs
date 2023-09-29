@@ -89,5 +89,18 @@ public class SmartChargingController : ControllerBase
         return await _groupManager.CreateConnector(id, chargeStationId,request);
     }
     
+    [HttpPut("{id:guid}/group/{chargeStationId:guid}/chargeStation/{connectorId:int}/connector")]
+    public async Task<SmartChargingApiResponse<ConnectorDto>> UpdateConnector(Guid id, Guid chargeStationId, 
+        int connectorId, [FromBody] UpdateConnectorRequest request)
+    {
+        return await _groupManager.UpdateConnector(id, chargeStationId, connectorId, request);
+    }
+    
+    [HttpDelete("{id:guid}/group/{chargeStationId:guid}/chargeStation/{connectorId:int}/connector")]
+    public async Task<SmartChargingApiResponse<ConnectorDto>> DeleteConnector(Guid id, Guid chargeStationId, int connectorId)
+    {
+        return await _groupManager.DeleteConnector(id, chargeStationId, connectorId);
+    }
+    
     #endregion Connector
 }
