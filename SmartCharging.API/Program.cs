@@ -31,11 +31,9 @@ builder.Services.AddDbContext<SmartChargingDbContext>();
 builder.Services.AddAutoMapper(mapperAssemblies);
 // Registering Repositories
 builder.Services.AddTransient(typeof(IRepository<Group>), typeof(GroupRepository));
-builder.Services.AddTransient(typeof(IRepository<ChargeStation>), typeof(ChargeStationRepository));
 
 // Registering Services
 builder.Services.AddTransient(typeof(ISmartChargingService<Group>), typeof(SmartChargingService<Group>));
-builder.Services.AddTransient(typeof(ISmartChargingService<ChargeStation>), typeof(SmartChargingService<ChargeStation>));
 
 // Registering Managers
 builder.Services.AddTransient<GroupManager>();
