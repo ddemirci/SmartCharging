@@ -177,11 +177,11 @@ public class GroupManager
             return Results.UnprocessableEntity("Given Connector could not be added. Reason: Capacity exceeded");
 
         var connectorId = FindAvailableSlotForConnector(chargeStation);
-        if(connectorId == 0)
-            return new SmartChargingApiResponse<ConnectorDto>(message: "Given Connector could not be added. Reason: There is no room in ChargeStation");
+        if(connectorId == null)
+            return Results.UnprocessableEntity("Given Connector could not be added. Reason: There is no room in ChargeStation");
         var connector = new Connector
         {
-            Id = FindAvailableSlotForConnector(chargeStation),
+            Id = connectorId.Value,
             MaxCurrentInAmps = request.MaxCurrentInAmps
         };
         
@@ -239,10 +239,10 @@ public class GroupManager
         return Results.Ok(_mapper.Map<ConnectorDto>(connector));
     }
 
-    private static int FindAvailableSlotForConnector(ChargeStation chargeStation)
+    private static int? FindAvailableSlotForConnector(ChargeStation chargeStation)
     {
         if (chargeStation.Connectors.Count >= 5)
-            return 0; // Means no available slot
+            return null; // Means no available slot
 
         var occupiedSlots = chargeStation.Connectors.Select(x => x.Id).ToHashSet();
         for (var i = 1; i <= 5; i++)
@@ -250,7 +250,7 @@ public class GroupManager
             if (!occupiedSlots.Contains(i)) return i;
         }
 
-        return 0;
+        return null;
     }
 
     private static int GetCurrentCapacityOfGroup(Group group)
