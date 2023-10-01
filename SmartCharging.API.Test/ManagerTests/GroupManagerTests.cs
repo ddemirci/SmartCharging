@@ -10,7 +10,6 @@ using SmartCharging.API.Requests.Connector;
 using SmartCharging.API.Requests.Group;
 using SmartCharging.Domain.DTOs;
 using SmartCharging.Domain.Entities;
-using SmartCharging.Domain.Mappings;
 using SmartCharging.Service.Contracts;
 
 namespace SmartCharging.API.Test.ManagerTests;
