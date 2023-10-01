@@ -6,6 +6,7 @@ using Moq;
 using SmartCharging.API.Exceptions;
 using SmartCharging.API.Manager;
 using SmartCharging.API.Requests.ChargeStation;
+using SmartCharging.API.Requests.Connector;
 using SmartCharging.API.Requests.Group;
 using SmartCharging.Domain.DTOs;
 using SmartCharging.Domain.Entities;
@@ -22,6 +23,7 @@ public class GroupManagerTests
 
     private readonly Guid _groupId = Guid.NewGuid();
     private readonly Guid _chargeStationId = Guid.NewGuid();
+    private readonly int _connectorId = 1;
     
     private static HttpContext CreateMockHttpContext() =>
         new DefaultHttpContext
@@ -44,7 +46,6 @@ public class GroupManagerTests
         {
             var mappingConfig = new MapperConfiguration(mc =>
             {
-                mc.AddProfile(new SmartChargingMappings());
                 mc.AddProfile(new RequestMappings());
             });
             var mapper = mappingConfig.CreateMapper();
@@ -67,8 +68,9 @@ public class GroupManagerTests
                     {
                         new()
                         {
-                            Id = 1,
-                            MaxCurrentInAmps = 30
+                            Id = _connectorId,
+                            MaxCurrentInAmps = 30,
+                            ChargeStationId = _chargeStationId
                         }
                     }
                 }
@@ -348,6 +350,490 @@ public class GroupManagerTests
     
     #endregion
     
+    #region UpdateChargeStationTests
+    
+    [Fact]
+    public async Task UpdateChargeStationReturnOk()
+    {
+        // Arrange
+        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+
+        var request = new UpdateChargeStationRequest
+        {
+            Name = "UpdatedName"
+        };
+        
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var chargeStation = await GetResponseValue<ChargeStationDto>(await manager.UpdateChargeStation(_groupId, _chargeStationId, request));
+        
+        //Assert
+        Assert.NotNull(chargeStation);
+        Assert.Equal(200, _mockHttpContext.Response.StatusCode);
+        Assert.Equal(_groupId, chargeStation.GroupId);
+        Assert.Equal(_chargeStationId, chargeStation.Id);
+        Assert.Equal(request.Name, chargeStation.Name);
+        
+    }
+
+    [Fact]
+    public async Task UpdateChargeStationShouldReturnNotFoundWhenThereIsNoGroup()
+    {
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var errorMessage = await GetResponseValue<string>(await manager.UpdateChargeStation(Guid.NewGuid(), 
+            _chargeStationId, new UpdateChargeStationRequest()));
+        
+        Assert.NotNull(errorMessage);
+        Assert.Equal(ExceptionMessages.GroupNotFound, errorMessage);
+        Assert.Equal(404, _mockHttpContext.Response.StatusCode);
+    }
+    
+    [Fact]
+    public async Task UpdateChargeStationShouldReturnNotFoundWhenThereIsNoChargeStation()
+    {
+        // Arrange
+        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var errorMessage = await GetResponseValue<string>(await manager.UpdateChargeStation(_groupId, 
+            Guid.NewGuid(), new UpdateChargeStationRequest()));
+        
+        Assert.NotNull(errorMessage);
+        Assert.Equal(ExceptionMessages.ChargeStationNotFound, errorMessage);
+        Assert.Equal(404, _mockHttpContext.Response.StatusCode);
+    }
+    
+    #endregion
+
+    #region DeleteChargeStationTests
+
+    [Fact]
+    public async Task DeleteChargeStationReturnOk()
+    {
+        // Arrange
+        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var chargeStation = await GetResponseValue<ChargeStationDto>(await manager.DeleteChargeStation(_groupId, _chargeStationId));
+        
+        //Assert
+        Assert.NotNull(chargeStation);
+        Assert.Equal(200, _mockHttpContext.Response.StatusCode);
+        Assert.Equal(_groupId, chargeStation.GroupId);
+        Assert.Equal(_chargeStationId, chargeStation.Id);
+        
+    }
+
+    [Fact]
+    public async Task DeleteChargeStationShouldReturnNotFoundWhenThereIsNoGroup()
+    {
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var errorMessage = await GetResponseValue<string>(await manager.DeleteChargeStation(Guid.NewGuid(), _chargeStationId));
+        
+        Assert.NotNull(errorMessage);
+        Assert.Equal(ExceptionMessages.GroupNotFound, errorMessage);
+        Assert.Equal(404, _mockHttpContext.Response.StatusCode);
+    }
+    
+    [Fact]
+    public async Task DeleteChargeStationShouldReturnNotFoundWhenThereIsNoChargeStation()
+    {
+        // Arrange
+        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var errorMessage = await GetResponseValue<string>(await manager.DeleteChargeStation(_groupId, Guid.NewGuid()));
+        
+        Assert.NotNull(errorMessage);
+        Assert.Equal(ExceptionMessages.ChargeStationNotFound, errorMessage);
+        Assert.Equal(404, _mockHttpContext.Response.StatusCode);
+    }
+
+    #endregion
+
+    #region GetConnectorTests
+
+    [Fact]
+    public async Task GetConnectorReturnOk()
+    {
+        // Arrange
+        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var connector = await GetResponseValue<ConnectorDto>(await manager.GetConnector(_groupId, _chargeStationId, _connectorId));
+        
+        //Assert
+        Assert.NotNull(connector);
+        Assert.Equal(200, _mockHttpContext.Response.StatusCode);
+        Assert.Equal(_connectorId, connector.Id);
+        Assert.Equal(_chargeStationId, connector.ChargeStationId);
+    }
+
+    [Fact]
+    public async Task GetConnectorShouldReturnNotFoundWhenThereIsNoGroup()
+    {
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var errorMessage = await GetResponseValue<string>(await manager.GetConnector(Guid.NewGuid(), _chargeStationId, _connectorId));
+        
+        Assert.NotNull(errorMessage);
+        Assert.Equal(ExceptionMessages.GroupNotFound, errorMessage);
+        Assert.Equal(404, _mockHttpContext.Response.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetConnectorShouldReturnNotFoundWhenThereIsNoChargeStation()
+    {
+        // Arrange
+        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var errorMessage = await GetResponseValue<string>(await manager.GetConnector(_groupId, Guid.NewGuid(), _connectorId));
+        
+        Assert.NotNull(errorMessage);
+        Assert.Equal(ExceptionMessages.ChargeStationNotFound, errorMessage);
+        Assert.Equal(404, _mockHttpContext.Response.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetConnectorShouldReturnNotFoundWhenThereIsNoConnector()
+    {
+        // Arrange
+        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var errorMessage = await GetResponseValue<string>(await manager.GetConnector(_groupId, _chargeStationId, 2));
+        
+        Assert.NotNull(errorMessage);
+        Assert.Equal(ExceptionMessages.ConnectorNotFound, errorMessage);
+        Assert.Equal(404, _mockHttpContext.Response.StatusCode);
+    }
+
+    #endregion
+
+    #region CreateConnectorTests
+
+    [Fact]
+    public async Task CreateConnectorReturnOk()
+    {
+        // Arrange
+        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        var request = new CreateConnectorRequest
+        {
+            MaxCurrentInAmps = 20
+        };
+        
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var connector = await GetResponseValue<ConnectorDto>(await manager.CreateConnector(_groupId, _chargeStationId, request));
+        
+        //Assert
+        Assert.NotNull(connector);
+        Assert.Equal(200, _mockHttpContext.Response.StatusCode);
+        Assert.Equal(_connectorId + 1, connector.Id);
+        Assert.Equal(request.MaxCurrentInAmps, connector.MaxCurrentInAmps);
+    }
+
+    [Fact]
+    public async Task CreateConnectorShouldReturnNotFoundWhenThereIsNoGroup()
+    {
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var errorMessage = await GetResponseValue<string>(await manager.CreateConnector(Guid.NewGuid(), 
+            _chargeStationId, new CreateConnectorRequest()));
+        
+        Assert.NotNull(errorMessage);
+        Assert.Equal(ExceptionMessages.GroupNotFound, errorMessage);
+        Assert.Equal(404, _mockHttpContext.Response.StatusCode);
+    }
+    
+    [Fact]
+    public async Task CreateConnectorShouldReturnNotFoundWhenThereIsNoChargeStation()
+    {
+        // Arrange
+        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var errorMessage = await GetResponseValue<string>(await manager.CreateConnector(_groupId, 
+            Guid.NewGuid(), new CreateConnectorRequest()));
+        
+        Assert.NotNull(errorMessage);
+        Assert.Equal(ExceptionMessages.ChargeStationNotFound, errorMessage);
+        Assert.Equal(404, _mockHttpContext.Response.StatusCode);
+    }
+    
+    [Fact]
+    public async Task CreateConnectorShouldReturnUnprocessableWhenThereCapacityExceeded()
+    {
+        // Arrange
+        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        var request = new CreateConnectorRequest
+        {
+            MaxCurrentInAmps = 100
+        };
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var errorMessage = await GetResponseValue<string>(await manager.CreateConnector(_groupId, _chargeStationId, request));
+        
+        Assert.NotNull(errorMessage);
+        Assert.Equal(ExceptionMessageGenerator.Format(
+            ExceptionMessages.CannotAddConnector,
+            ExceptionReasons.CapacityExceeded
+        ), errorMessage);
+        Assert.Equal(422, _mockHttpContext.Response.StatusCode);
+    }
+    
+    [Fact]
+    public async Task CreateConnectorShouldReturnUnprocessableWhenThereIsNoRoomInChargeStation()
+    {
+        // Arrange
+        var fullChargeStationGroup = new Group
+        {
+            Id = _groupId,
+            CapacityInAmps = 200,
+            ChargeStations = new List<ChargeStation>
+            {
+                new ChargeStation
+                {
+                    Id = _chargeStationId,
+                    Connectors = new List<Connector>
+                    {
+                        new(), new(), new(), new(), new()
+                    }
+                }
+            }
+        };
+        
+        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(fullChargeStationGroup);
+        
+        var request = new CreateConnectorRequest
+        {
+            MaxCurrentInAmps = 100
+        };
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var errorMessage = await GetResponseValue<string>(await manager.CreateConnector(_groupId, _chargeStationId, request));
+        
+        Assert.NotNull(errorMessage);
+        Assert.Equal(ExceptionMessageGenerator.Format(
+            ExceptionMessages.CannotAddConnector,
+            ExceptionReasons.NoRoomInChargeStation
+        ), errorMessage);
+        Assert.Equal(422, _mockHttpContext.Response.StatusCode);
+    }
+
+    #endregion
+    
+    #region UpdateConnectorTests
+    
+    [Fact]
+    public async Task UpdateConnectorReturnOk()
+    {
+        // Arrange
+        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        var request = new UpdateConnectorRequest
+        {
+            MaxCurrentInAmps = 20
+        };
+        
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var connector = await GetResponseValue<ConnectorDto>(await manager.UpdateConnector(_groupId, 
+            _chargeStationId, _connectorId, request));
+        
+        //Assert
+        Assert.NotNull(connector);
+        Assert.Equal(200, _mockHttpContext.Response.StatusCode);
+        Assert.Equal(_connectorId, connector.Id);
+        Assert.Equal(request.MaxCurrentInAmps, connector.MaxCurrentInAmps);
+    }
+
+    [Fact]
+    public async Task UpdateConnectorShouldReturnNotFoundWhenThereIsNoGroup()
+    {
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var errorMessage = await GetResponseValue<string>(await manager.UpdateConnector(Guid.NewGuid(), 
+            _chargeStationId, _connectorId, new UpdateConnectorRequest()));
+        
+        Assert.NotNull(errorMessage);
+        Assert.Equal(ExceptionMessages.GroupNotFound, errorMessage);
+        Assert.Equal(404, _mockHttpContext.Response.StatusCode);
+    }
+    
+    [Fact]
+    public async Task UpdateConnectorShouldReturnNotFoundWhenThereIsNoChargeStation()
+    {
+        // Arrange
+        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var errorMessage = await GetResponseValue<string>(await manager.UpdateConnector(_groupId, 
+            Guid.NewGuid(), _connectorId, new UpdateConnectorRequest()));
+        
+        Assert.NotNull(errorMessage);
+        Assert.Equal(ExceptionMessages.ChargeStationNotFound, errorMessage);
+        Assert.Equal(404, _mockHttpContext.Response.StatusCode);
+    }
+    
+    [Fact]
+    public async Task UpdateConnectorShouldReturnNotFoundWhenThereIsNoConnector()
+    {
+        // Arrange
+        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var errorMessage = await GetResponseValue<string>(await manager.UpdateConnector(_groupId, 
+            _chargeStationId, 3, new UpdateConnectorRequest()));
+        
+        Assert.NotNull(errorMessage);
+        Assert.Equal(ExceptionMessages.ConnectorNotFound, errorMessage);
+        Assert.Equal(404, _mockHttpContext.Response.StatusCode);
+    }
+    
+    [Fact]
+    public async Task UpdateConnectorShouldReturnUnprocessableWhenThereCapacityExceeded()
+    {
+        // Arrange
+        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        var request = new UpdateConnectorRequest
+        {
+            MaxCurrentInAmps = 200
+        };
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var errorMessage = await GetResponseValue<string>(await manager.UpdateConnector(_groupId, 
+            _chargeStationId, _connectorId, request));
+        
+        Assert.NotNull(errorMessage);
+        Assert.Equal(ExceptionMessageGenerator.Format(
+            ExceptionMessages.CannotUpdateConnector,
+            ExceptionReasons.CapacityExceeded
+        ), errorMessage);
+        Assert.Equal(422, _mockHttpContext.Response.StatusCode);
+    }
+    
+    #endregion
+    
+    #region DeleteConnector
+    
+    [Fact]
+    public async Task DeleteConnectorReturnOk()
+    {
+        // Arrange
+        var group = new Group
+        {
+            Id = _groupId,
+            CapacityInAmps = 200,
+            ChargeStations = new List<ChargeStation>
+            {
+                new ChargeStation
+                {
+                    Id = _chargeStationId,
+                    Connectors = new List<Connector>
+                    {
+                        new()
+                        {
+                            Id = _connectorId,
+                        }, 
+                        new()
+                        {
+                            Id = 2
+                        }, 
+                    }
+                }
+            }
+        };
+        
+        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(group);
+        
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var connector = await GetResponseValue<ConnectorDto>(await manager.DeleteConnector(_groupId, 
+            _chargeStationId, _connectorId));
+        
+        //Assert
+        Assert.NotNull(connector);
+        Assert.Equal(200, _mockHttpContext.Response.StatusCode);
+        Assert.Equal(_connectorId, connector.Id);
+    }
+
+    [Fact]
+    public async Task DeleteConnectorShouldReturnNotFoundWhenThereIsNoGroup()
+    {
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var errorMessage = await GetResponseValue<string>(await manager.DeleteConnector(Guid.NewGuid(), 
+            _chargeStationId, _connectorId));
+        
+        Assert.NotNull(errorMessage);
+        Assert.Equal(ExceptionMessages.GroupNotFound, errorMessage);
+        Assert.Equal(404, _mockHttpContext.Response.StatusCode);
+    }
+    
+    [Fact]
+    public async Task DeleteConnectorShouldReturnNotFoundWhenThereIsNoChargeStation()
+    {
+        // Arrange
+        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var errorMessage = await GetResponseValue<string>(await manager.DeleteConnector(_groupId, 
+            Guid.NewGuid(), _connectorId));
+        
+        Assert.NotNull(errorMessage);
+        Assert.Equal(ExceptionMessages.ChargeStationNotFound, errorMessage);
+        Assert.Equal(404, _mockHttpContext.Response.StatusCode);
+    }
+    
+    [Fact]
+    public async Task DeleteConnectorShouldReturnNotFoundWhenThereIsNoConnector()
+    {
+        // Arrange
+        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var errorMessage = await GetResponseValue<string>(await manager.DeleteConnector(_groupId, 
+            _chargeStationId, 3));
+        
+        Assert.NotNull(errorMessage);
+        Assert.Equal(ExceptionMessages.ConnectorNotFound, errorMessage);
+        Assert.Equal(404, _mockHttpContext.Response.StatusCode);
+    }
+    
+    [Fact]
+    public async Task DeleteConnectorShouldReturnUnprocessableWhenThatIsTheLastConnector()
+    {
+        // Arrange
+        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+
+        // Act
+        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var errorMessage = await GetResponseValue<string>(await manager.DeleteConnector(_groupId, 
+            _chargeStationId, _connectorId));
+        
+        Assert.NotNull(errorMessage);
+        Assert.Equal(ExceptionMessageGenerator.Format(
+            ExceptionMessages.CannotDeleteConnector,
+            ExceptionReasons.LastConnectorOfChargeStation
+        ), errorMessage);
+        Assert.Equal(422, _mockHttpContext.Response.StatusCode);
+    }
+    
+    #endregion
     
     #region Helpers
 
