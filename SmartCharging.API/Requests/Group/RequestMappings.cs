@@ -1,10 +1,10 @@
 namespace SmartCharging.API.Requests.Group;
 
-public class Mappings : AutoMapper.Profile
+public class RequestMappings : AutoMapper.Profile
 {
-    public Mappings()
+    public RequestMappings()
     {
-        CreateMap<CreateGroupRequest, Domain.Entities.Group>();
+        CreateMap<CreateGroupRequest, Domain.Entities.Group>().ReverseMap();
         
         // TODO: Fix and open
         // CreateMap<UpdateGroupRequest, Domain.Entities.Group>()
