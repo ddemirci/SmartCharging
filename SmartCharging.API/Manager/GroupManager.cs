@@ -28,14 +28,14 @@ public class GroupManager
         var group = await _groupService.Get(id);
         return group == null 
             ? Results.NotFound(ExceptionMessages.GroupNotFound) 
-            : Results.Ok(_mapper.Map<GroupDto>(group));
+            : Results.Ok(new GroupDto(group));
     }
 
     public async Task<IResult> CreateGroup(CreateGroupRequest request)
     {
         var group = _mapper.Map<Group>(request);
         var entity = await _groupService.Create(group);
-        return Results.Created("uri",_mapper.Map<GroupDto>(entity));
+        return Results.Created("createGroup",new GroupDto(entity));
     }
     
     public async Task<IResult> UpdateGroup(Guid id, UpdateGroupRequest request)
@@ -44,7 +44,6 @@ public class GroupManager
         if (group == null)
             return Results.NotFound(ExceptionMessages.GroupNotFound);
 
-        // TODO:Automapper couldn't handle nullable integer value condition and mapped CapacityInAmps as always 0 when the request did not have.
         if (request.Name != null)
             group.Name = request.Name;
 
@@ -60,9 +59,8 @@ public class GroupManager
             group.CapacityInAmps = request.CapacityInAmps.Value;
         }
         
-        // var updatedEntity = _mapper.Map(request, group);
         var returnedEntity = await _groupService.Update(group);
-        return Results.Ok(_mapper.Map<GroupDto>(returnedEntity));
+        return Results.Ok(new GroupDto(returnedEntity));
     }
     
     public async Task<IResult> DeleteGroup(Guid id)
@@ -71,7 +69,7 @@ public class GroupManager
         if (group == null)
             return Results.NotFound(ExceptionMessages.GroupNotFound);
         var deletedEntry = await _groupService.Delete(group);
-        return Results.Ok(_mapper.Map<GroupDto>(deletedEntry));
+        return Results.Ok(new GroupDto(deletedEntry));
     }
     
     #endregion
@@ -87,7 +85,7 @@ public class GroupManager
         var chargeStation = group.ChargeStations.FirstOrDefault(x => x.Id == chargeStationId);
         return chargeStation == null 
             ? Results.NotFound(ExceptionMessages.ChargeStationNotFound) 
-            : Results.Ok(_mapper.Map<ChargeStationDto>(chargeStation));
+            : Results.Ok(new ChargeStationDto(chargeStation));
     }
     
     public async Task<IResult> CreateChargeStation(Guid id, CreateChargeStationRequest request)
@@ -119,7 +117,7 @@ public class GroupManager
         
         group.ChargeStations.Add(chargeStation);
         await _groupService.Update(group);
-        return Results.Created("chargeStation",_mapper.Map<ChargeStationDto>(chargeStation));
+        return Results.Created("chargeStation",new ChargeStationDto(chargeStation));
     }
     
     public async Task<IResult> UpdateChargeStation(Guid id, 
@@ -133,11 +131,10 @@ public class GroupManager
         if (chargeStation == null)
             return Results.NotFound(ExceptionMessages.ChargeStationNotFound);
         
-        // TODO: Handle with automapper
         chargeStation.Name = request.Name;
 
         await _groupService.Update(group);
-        return Results.Ok(_mapper.Map<ChargeStationDto>(chargeStation));
+        return Results.Ok(new ChargeStationDto(chargeStation));
     }
     
     public async Task<IResult> DeleteChargeStation(Guid id, Guid chargeStationId)
@@ -152,7 +149,7 @@ public class GroupManager
 
         group.ChargeStations.Remove(chargeStation);
         await _groupService.Update(group);
-        return Results.Ok(_mapper.Map<ChargeStationDto>(chargeStation));
+        return Results.Ok(new ChargeStationDto(chargeStation));
     }
     
     #endregion
@@ -171,7 +168,7 @@ public class GroupManager
         var connector = chargeStation.Connectors.FirstOrDefault(x => x.Id == connectorId);
         return connector == null
             ? Results.NotFound(ExceptionMessages.ConnectorNotFound) 
-            : Results.Ok(_mapper.Map<ConnectorDto>(connector));
+            : Results.Ok(new ConnectorDto(connector));
     }
     
     public async Task<IResult> CreateConnector(Guid id, Guid chargeStationId, CreateConnectorRequest request)
@@ -206,7 +203,7 @@ public class GroupManager
         
         chargeStation.Connectors.Add(connector);
         await _groupService.Update(group);
-        return Results.Ok(_mapper.Map<ConnectorDto>(connector));
+        return Results.Ok(new ConnectorDto(connector));
     }
     
     public async Task<IResult> UpdateConnector(Guid id, Guid chargeStationId, 
@@ -234,7 +231,7 @@ public class GroupManager
 
         connector.MaxCurrentInAmps = request.MaxCurrentInAmps;
         await _groupService.Update(group);
-        return Results.Ok(_mapper.Map<ConnectorDto>(connector));
+        return Results.Ok(new ConnectorDto(connector));
     }
     
     public async Task<IResult> DeleteConnector(Guid id,
@@ -261,7 +258,7 @@ public class GroupManager
         
         chargeStation.Connectors.Remove(connector);
         await _groupService.Update(group);
-        return Results.Ok(_mapper.Map<ConnectorDto>(connector));
+        return Results.Ok(new ConnectorDto(connector));
     }
 
     private static int? FindAvailableSlotForConnector(ChargeStation chargeStation)
