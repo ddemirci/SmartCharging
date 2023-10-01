@@ -1,4 +1,5 @@
 using AutoMapper;
+using SmartCharging.API.Exceptions;
 using SmartCharging.API.Requests.ChargeStation;
 using SmartCharging.API.Requests.Connector;
 using SmartCharging.API.Requests.Group;
@@ -26,7 +27,7 @@ public class GroupManager
     {
         var group = await _groupService.Get(id);
         return group == null 
-            ? Results.NotFound("Given Group could not be found") 
+            ? Results.NotFound(ExceptionMessages.GroupNotFound) 
             : Results.Ok(_mapper.Map<GroupDto>(group));
     }
 
@@ -41,7 +42,7 @@ public class GroupManager
     {
         var group = await _groupService.Get(id);
         if (group == null)
-            return Results.NotFound("Given Group could not be found");
+            return Results.NotFound(ExceptionMessages.GroupNotFound);
 
         // TODO:Automapper couldn't handle nullable integer value condition and mapped CapacityInAmps as always 0 when the request did not have.
         if (request.Name != null)
@@ -52,7 +53,10 @@ public class GroupManager
             //Fetch current capacity
             var currentCapacity = GetCurrentCapacityOfGroup(group);
             if (currentCapacity > request.CapacityInAmps.Value)
-                return Results.UnprocessableEntity("Given Group could not be updated. Reason: New capacity is insufficient");
+                return Results.UnprocessableEntity(ExceptionMessageGenerator.Format(
+                    ExceptionMessages.CannotUpdateGroup,
+                    ExceptionReasons.NewCapacityInsufficient)
+                );
             group.CapacityInAmps = request.CapacityInAmps.Value;
         }
         
@@ -65,7 +69,7 @@ public class GroupManager
     {
         var group = await _groupService.Get(id);
         if (group == null)
-            return Results.NotFound("Given Group could not be found");
+            return Results.NotFound(ExceptionMessages.GroupNotFound);
         var deletedEntry = await _groupService.Delete(group);
         return Results.Ok(_mapper.Map<GroupDto>(deletedEntry));
     }
@@ -78,11 +82,11 @@ public class GroupManager
     {
         var group = await _groupService.Get(id);
         if (group == null)
-            return Results.NotFound("Given Group could not be found");
+            return Results.NotFound(ExceptionMessages.GroupNotFound);
 
         var chargeStation = group.ChargeStations.FirstOrDefault(x => x.Id == chargeStationId);
         return chargeStation == null 
-            ? Results.NotFound("Given ChargeStation could not be found") 
+            ? Results.NotFound(ExceptionMessages.ChargeStationNotFound) 
             : Results.Ok(_mapper.Map<ChargeStationDto>(chargeStation));
     }
     
@@ -90,12 +94,15 @@ public class GroupManager
     {
         var group = await _groupService.Get(id);
         if (group == null)
-            return Results.NotFound("Given Group could not be found");
+            return Results.NotFound(ExceptionMessages.GroupNotFound);
 
         // Get current capacity and check for max
         var currentCapacity = GetCurrentCapacityOfGroup(group);
         if (currentCapacity + request.ConnectorMaxCurrentInAmps > group.CapacityInAmps)
-            return Results.UnprocessableEntity("Given ChargeStation could not be added. Reason: Capacity exceeded");
+            return Results.UnprocessableEntity(ExceptionMessageGenerator.Format(
+                ExceptionMessages.CannotAddChargeStation, 
+                ExceptionReasons.CapacityExceeded
+                ));
         
         var chargeStation = new ChargeStation
         {
@@ -120,11 +127,11 @@ public class GroupManager
     {
         var group = await _groupService.Get(id);
         if (group == null)
-            return Results.NotFound("Given Group could not be found");
+            return Results.NotFound(ExceptionMessages.GroupNotFound);
 
         var chargeStation = group.ChargeStations.FirstOrDefault(x => x.Id == chargeStationId);
         if (chargeStation == null)
-            return Results.NotFound("Given ChargeStation could not be found");
+            return Results.NotFound(ExceptionMessages.ChargeStationNotFound);
         
         // TODO: Handle with automapper
         chargeStation.Name = request.Name;
@@ -137,11 +144,11 @@ public class GroupManager
     {
         var group = await _groupService.Get(id);
         if (group == null)
-            return Results.NotFound("Given Group could not be found");
+            return Results.NotFound(ExceptionMessages.GroupNotFound);
 
         var chargeStation = group.ChargeStations.FirstOrDefault(x => x.Id == chargeStationId);
         if (chargeStation == null)
-            return Results.NotFound("Given ChargeStation could not be found");
+            return Results.NotFound(ExceptionMessages.ChargeStationNotFound);
 
         group.ChargeStations.Remove(chargeStation);
         await _groupService.Update(group);
@@ -155,15 +162,15 @@ public class GroupManager
     {
         var group = await _groupService.Get(id);
         if (group == null)
-            return Results.NotFound("Given Group could not be found");
+            return Results.NotFound(ExceptionMessages.GroupNotFound);
 
         var chargeStation = group.ChargeStations.FirstOrDefault(x => x.Id == chargeStationId);
         if (chargeStation == null)
-            return Results.NotFound("Given ChargeStation could not be found");
+            return Results.NotFound(ExceptionMessages.ChargeStationNotFound);
 
         var connector = chargeStation.Connectors.FirstOrDefault(x => x.Id == connectorId);
         return connector == null
-            ? Results.NotFound("Given Connector could not be found") 
+            ? Results.NotFound(ExceptionMessages.ConnectorNotFound) 
             : Results.Ok(_mapper.Map<ConnectorDto>(connector));
     }
     
@@ -171,20 +178,26 @@ public class GroupManager
     {
         var group = await _groupService.Get(id);
         if (group == null)
-            return Results.NotFound("Given Group could not be found");
+            return Results.NotFound(ExceptionMessages.GroupNotFound);
 
         var chargeStation = group.ChargeStations.FirstOrDefault(x => x.Id == chargeStationId);
         if (chargeStation == null)
-            return Results.NotFound("Given ChargeStation could not be found");
+            return Results.NotFound(ExceptionMessages.ChargeStationNotFound);
 
         //Check for max amps
         var currentAmps = GetCurrentCapacityOfGroup(group);
         if(currentAmps + request.MaxCurrentInAmps > group.CapacityInAmps)
-            return Results.UnprocessableEntity("Given Connector could not be added. Reason: Capacity exceeded");
+            return Results.UnprocessableEntity(ExceptionMessageGenerator.Format(
+                ExceptionMessages.CannotAddConnector,
+                ExceptionReasons.CapacityExceeded
+                ));
 
         var connectorId = FindAvailableSlotForConnector(chargeStation);
-        if(connectorId == null)
-            return Results.UnprocessableEntity("Given Connector could not be added. Reason: There is no room in ChargeStation");
+        if (connectorId == null)
+            return Results.UnprocessableEntity(ExceptionMessageGenerator.Format(
+                ExceptionMessages.CannotAddConnector,
+                ExceptionReasons.NoRoomInChargeStation
+            ));
         var connector = new Connector
         {
             Id = connectorId.Value,
@@ -201,20 +214,23 @@ public class GroupManager
     {
         var group = await _groupService.Get(id);
         if (group == null)
-            return Results.NotFound("Given Group could not be found");
+            return Results.NotFound(ExceptionMessages.GroupNotFound);
 
         var chargeStation = group.ChargeStations.FirstOrDefault(x => x.Id == chargeStationId);
         if (chargeStation == null)
-            return Results.NotFound("Given ChargeStation could not be found");
+            return Results.NotFound(ExceptionMessages.ChargeStationNotFound);
 
         var connector = chargeStation.Connectors.FirstOrDefault(x => x.Id == connectorId);
         if (connector == null)
-            return Results.NotFound("Given Connector could not be found");
+            return Results.NotFound(ExceptionMessages.ConnectorNotFound);
        
         //Check for max amps
         var currentAmps = GetCurrentCapacityOfGroup(group);
         if(currentAmps - connector.MaxCurrentInAmps + request.MaxCurrentInAmps > group.CapacityInAmps)
-            return Results.UnprocessableEntity("Given Connector could not be updated. Reason: Capacity exceeded");
+            return Results.UnprocessableEntity(ExceptionMessageGenerator.Format(
+                ExceptionMessages.CannotUpdateConnector,
+                ExceptionReasons.CapacityExceeded
+            ));
 
         connector.MaxCurrentInAmps = request.MaxCurrentInAmps;
         await _groupService.Update(group);
@@ -226,19 +242,22 @@ public class GroupManager
     {
         var group = await _groupService.Get(id);
         if (group == null)
-            return Results.NotFound("Given Group could not be found");
+            return Results.NotFound(ExceptionMessages.GroupNotFound);
 
         var chargeStation = group.ChargeStations.FirstOrDefault(x => x.Id == chargeStationId);
         if (chargeStation == null)
-            return Results.NotFound("Given ChargeStation could not be found");
+            return Results.NotFound(ExceptionMessages.ChargeStationNotFound);
 
         var connector = chargeStation.Connectors.FirstOrDefault(x => x.Id == connectorId);
         if (connector == null)
-            return Results.NotFound("Given Connector could not be found");
+            return Results.NotFound(ExceptionMessages.ConnectorNotFound);
 
         // There have to be at least one connector in the charging station. The last connector should not be removed.
         if(chargeStation.Connectors.Count == 1)
-            return Results.UnprocessableEntity("Given Connector could not be removed. Reason: It is the last connector of charge station");
+            return Results.UnprocessableEntity(ExceptionMessageGenerator.Format(
+                ExceptionMessages.CannotDeleteConnector,
+                ExceptionReasons.LastConnectorOfChargeStation
+            ));
         
         chargeStation.Connectors.Remove(connector);
         await _groupService.Update(group);
