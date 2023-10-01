@@ -18,7 +18,7 @@ public class SmartChargingDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseMySQL(_configuration.GetConnectionString("SmartChargingDb") ?? string.Empty);
+        optionsBuilder.UseMySQL(_configuration.GetConnectionString("DefaultConnection") ?? string.Empty);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
