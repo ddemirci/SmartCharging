@@ -6,7 +6,7 @@ public class ChargeStation
     public string Name { get; set; }
     
     // Relationships
-    public ICollection<Connector> Connectors { get; set; }
+    public ICollection<Connector> Connectors { get; set; } = new List<Connector>();
     
     public Group Group { get; set; }
     public Guid GroupId { get; set; }
