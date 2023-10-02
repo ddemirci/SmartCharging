@@ -46,8 +46,7 @@ public class GroupManager
     
     public async Task<IResult> UpdateGroup(Guid id, UpdateGroupRequest request)
     {
-        var ct = new CancellationToken();
-        var group = await _groupRepository.Get(id, ct);
+        var group = await _groupRepository.Get(id, new CancellationToken());
         if (group == null)
             return Results.NotFound(ExceptionMessages.GroupNotFound);
 
@@ -66,17 +65,16 @@ public class GroupManager
             group.CapacityInAmps = request.CapacityInAmps.Value;
         }
         
-        var returnedEntity = _groupRepository.Update(group, ct);
+        var returnedEntity = _groupRepository.Update(group);
         return Results.Ok(new GroupDto(returnedEntity));
     }
     
     public async Task<IResult> DeleteGroup(Guid id)
     {
-        var ct = new CancellationToken();
-        var group = await _groupRepository.Get(id, ct);
+        var group = await _groupRepository.Get(id, new CancellationToken());
         if (group == null)
             return Results.NotFound(ExceptionMessages.GroupNotFound);
-        var deletedEntry = _groupRepository.Delete(group, ct);
+        var deletedEntry = _groupRepository.Delete(group);
         return Results.Ok(new GroupDto(deletedEntry));
     }
     
@@ -98,8 +96,7 @@ public class GroupManager
     
     public async Task<IResult> CreateChargeStation(Guid id, CreateChargeStationRequest request)
     {
-        var ct = new CancellationToken();
-        var group = await _groupRepository.Get(id, ct);
+        var group = await _groupRepository.Get(id, new CancellationToken());
         if (group == null)
             return Results.NotFound(ExceptionMessages.GroupNotFound);
 
@@ -125,15 +122,14 @@ public class GroupManager
         };
         
         group.ChargeStations.Add(chargeStation);
-        _groupRepository.Update(group, ct);
+        _groupRepository.Update(group);
         return Results.Created("chargeStation",new ChargeStationDto(chargeStation));
     }
     
     public async Task<IResult> UpdateChargeStation(Guid id, 
         Guid chargeStationId, UpdateChargeStationRequest request)
     {
-        var ct = new CancellationToken();
-        var group = await _groupRepository.Get(id, ct);
+        var group = await _groupRepository.Get(id, new CancellationToken());
         if (group == null)
             return Results.NotFound(ExceptionMessages.GroupNotFound);
 
@@ -143,14 +139,13 @@ public class GroupManager
         
         chargeStation.Name = request.Name;
 
-        _groupRepository.Update(group, ct);
+        _groupRepository.Update(group);
         return Results.Ok(new ChargeStationDto(chargeStation));
     }
     
     public async Task<IResult> DeleteChargeStation(Guid id, Guid chargeStationId)
     {
-        var ct = new CancellationToken();
-        var group = await _groupRepository.Get(id, ct);
+        var group = await _groupRepository.Get(id, new CancellationToken());
         if (group == null)
             return Results.NotFound(ExceptionMessages.GroupNotFound);
 
@@ -159,7 +154,7 @@ public class GroupManager
             return Results.NotFound(ExceptionMessages.ChargeStationNotFound);
 
         group.ChargeStations.Remove(chargeStation); 
-        _groupRepository.Update(group, ct);
+        _groupRepository.Update(group);
         return Results.Ok(new ChargeStationDto(chargeStation));
     }
     
@@ -184,8 +179,7 @@ public class GroupManager
     
     public async Task<IResult> CreateConnector(Guid id, Guid chargeStationId, CreateConnectorRequest request)
     {
-        var ct = new CancellationToken();
-        var group = await _groupRepository.Get(id, ct);
+        var group = await _groupRepository.Get(id, new CancellationToken());
         if (group == null)
             return Results.NotFound(ExceptionMessages.GroupNotFound);
 
@@ -214,15 +208,14 @@ public class GroupManager
         };
         
         chargeStation.Connectors.Add(connector);
-        _groupRepository.Update(group, ct);
+        _groupRepository.Update(group);
         return Results.Ok(new ConnectorDto(connector));
     }
     
     public async Task<IResult> UpdateConnector(Guid id, Guid chargeStationId, 
         int connectorId, UpdateConnectorRequest request)
     {
-        var ct = new CancellationToken();
-        var group = await _groupRepository.Get(id, ct);
+        var group = await _groupRepository.Get(id, new CancellationToken());
         if (group == null)
             return Results.NotFound(ExceptionMessages.GroupNotFound);
 
@@ -243,15 +236,14 @@ public class GroupManager
             ));
 
         connector.MaxCurrentInAmps = request.MaxCurrentInAmps;
-        _groupRepository.Update(group, ct);
+        _groupRepository.Update(group);
         return Results.Ok(new ConnectorDto(connector));
     }
     
     public async Task<IResult> DeleteConnector(Guid id,
         Guid chargeStationId, int connectorId)
     {
-        var ct = new CancellationToken();
-        var group = await _groupRepository.Get(id, ct);
+        var group = await _groupRepository.Get(id, new CancellationToken());
         if (group == null)
             return Results.NotFound(ExceptionMessages.GroupNotFound);
 
@@ -271,7 +263,7 @@ public class GroupManager
             ));
         
         chargeStation.Connectors.Remove(connector);
-        _groupRepository.Update(group, ct);
+        _groupRepository.Update(group);
         return Results.Ok(new ConnectorDto(connector));
     }
 

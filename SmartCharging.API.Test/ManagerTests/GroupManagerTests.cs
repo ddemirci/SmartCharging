@@ -152,7 +152,7 @@ public class GroupManagerTests
         };
         
         _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
-        _groupRepositoryMock.Setup(x => x.Update(It.IsAny<Group>(), CancellationToken.None))
+        _groupRepositoryMock.Setup(x => x.Update(It.IsAny<Group>()))
             .Returns(updatedGroup);
         
         // Act
@@ -210,7 +210,7 @@ public class GroupManagerTests
     {
         // Arrange
         _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
-        _groupRepositoryMock.Setup(x => x.Delete(It.IsAny<Group>(), CancellationToken.None))
+        _groupRepositoryMock.Setup(x => x.Delete(It.IsAny<Group>()))
             .Returns(_group);
         
         // Act
