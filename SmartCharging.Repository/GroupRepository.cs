@@ -30,14 +30,14 @@ public class GroupRepository : IRepository<Group>
         return addedEntity.Entity;
     }
 
-    public Group Update(Group entity, CancellationToken ct = new())
+    public Group Update(Group entity)
     {
         var updatedEntry =_groupDbSet.Update(entity).Entity;
         _dbContext.SaveChanges();
         return updatedEntry;
     }
 
-    public Group Delete(Group entity, CancellationToken ct = new())
+    public Group Delete(Group entity)
     {
         var group = _groupDbSet.Remove(entity).Entity;
         _dbContext.SaveChanges();

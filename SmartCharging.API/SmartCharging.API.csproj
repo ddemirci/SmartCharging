@@ -22,7 +22,7 @@
     <ItemGroup>
       <ProjectReference Include="..\SmartCharging.Domain\SmartCharging.Domain.csproj" />
       <ProjectReference Include="..\SmartCharging.Persistence\SmartCharging.Persistence.csproj" />
-      <ProjectReference Include="..\SmartCharging.Service\SmartCharging.Service.csproj" />
+      <ProjectReference Include="..\SmartCharging.Repository\SmartCharging.Repository.csproj" />
     </ItemGroup>
 
 </Project>

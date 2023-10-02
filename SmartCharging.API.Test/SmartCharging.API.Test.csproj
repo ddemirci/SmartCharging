@@ -26,7 +26,6 @@
     <ItemGroup>
       <ProjectReference Include="..\SmartCharging.API\SmartCharging.API.csproj" />
       <ProjectReference Include="..\SmartCharging.Domain\SmartCharging.Domain.csproj" />
-      <ProjectReference Include="..\SmartCharging.Service\SmartCharging.Service.csproj" />
     </ItemGroup>
 
 </Project>

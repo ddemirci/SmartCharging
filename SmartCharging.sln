@@ -6,8 +6,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartCharging.Persistence",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartCharging.API", "SmartCharging.API\SmartCharging.API.csproj", "{E1BEF1DA-5CED-453D-B2DB-5107C6EDC670}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartCharging.Service", "SmartCharging.Service\SmartCharging.Service.csproj", "{5F318CB4-ABDF-4F27-B27A-E50645E58185}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartCharging.Repository", "SmartCharging.Repository\SmartCharging.Repository.csproj", "{AE75FDEF-0432-4C9A-8869-AD49C6147503}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6D35B709-B84B-4B4B-B8F2-C4685A62EE21}"
@@ -36,10 +34,6 @@ Global
 		{F92BF087-DD1C-4DB9-B015-AEE0274B9903}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F92BF087-DD1C-4DB9-B015-AEE0274B9903}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F92BF087-DD1C-4DB9-B015-AEE0274B9903}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5F318CB4-ABDF-4F27-B27A-E50645E58185}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5F318CB4-ABDF-4F27-B27A-E50645E58185}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5F318CB4-ABDF-4F27-B27A-E50645E58185}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5F318CB4-ABDF-4F27-B27A-E50645E58185}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AE75FDEF-0432-4C9A-8869-AD49C6147503}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AE75FDEF-0432-4C9A-8869-AD49C6147503}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE75FDEF-0432-4C9A-8869-AD49C6147503}.Release|Any CPU.ActiveCfg = Release|Any CPU
