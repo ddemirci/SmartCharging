@@ -10,13 +10,13 @@ using SmartCharging.API.Requests.Connector;
 using SmartCharging.API.Requests.Group;
 using SmartCharging.Domain.DTOs;
 using SmartCharging.Domain.Entities;
-using SmartCharging.Service.Contracts;
+using SmartCharging.Repository;
 
 namespace SmartCharging.API.Test.ManagerTests;
 
 public class GroupManagerTests
 {
-    private readonly Mock<ISmartChargingService<Group>> _groupServiceMock;
+    private readonly Mock<IRepository<Group>> _groupRepositoryMock;
     private readonly IMapper _mapper;
     private HttpContext _mockHttpContext;
 
@@ -40,7 +40,7 @@ public class GroupManagerTests
 
     public GroupManagerTests()
     {
-        _groupServiceMock = new Mock<ISmartChargingService<Group>>();
+        _groupRepositoryMock = new Mock<IRepository<Group>>();
         if (_mapper == null)
         {
             var mappingConfig = new MapperConfiguration(mc =>
@@ -83,10 +83,10 @@ public class GroupManagerTests
     public async Task GetGroupShouldReturnOk()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
         
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var group = await GetResponseValue<GroupDto>(await manager.GetGroup(_group.Id));
         
         //Assert
@@ -99,7 +99,7 @@ public class GroupManagerTests
     public async Task GetGroupShouldReturnNotFoundWhenThereIsNoGroup()
     {
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.GetGroup(Guid.NewGuid()));
         
         Assert.NotNull(errorMessage);
@@ -116,11 +116,11 @@ public class GroupManagerTests
     {
         // Arrange
         var createGroupRequest = _mapper.Map<CreateGroupRequest>(_group);
-        _groupServiceMock.Setup(x => x.Create(It.IsAny<Group>(), CancellationToken.None))
+        _groupRepositoryMock.Setup(x => x.Add(It.IsAny<Group>(), CancellationToken.None))
             .ReturnsAsync(_group);
         
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var group = await GetResponseValue<GroupDto>(await manager.CreateGroup(createGroupRequest));
         
         Assert.NotNull(group);
@@ -151,12 +151,12 @@ public class GroupManagerTests
             ChargeStations = new List<ChargeStation>(_group.ChargeStations)
         };
         
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
-        _groupServiceMock.Setup(x => x.Update(It.IsAny<Group>(), CancellationToken.None))
-            .ReturnsAsync(updatedGroup);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x => x.Update(It.IsAny<Group>(), CancellationToken.None))
+            .Returns(updatedGroup);
         
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var group = await GetResponseValue<GroupDto>(await manager.UpdateGroup(_group.Id, request));
         
         // Assert
@@ -171,7 +171,7 @@ public class GroupManagerTests
     public async Task UpdateGroupShouldReturnNotFoundWhenThereIsNoGroup()
     {
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.UpdateGroup(Guid.NewGuid(), new UpdateGroupRequest()));
         
         Assert.NotNull(errorMessage);
@@ -189,10 +189,10 @@ public class GroupManagerTests
             CapacityInAmps = 20
         };
 
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
         
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.UpdateGroup(_group.Id, request));
         
         // Assert
@@ -209,12 +209,12 @@ public class GroupManagerTests
     public async Task DeleteGroupShouldReturnOk()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
-        _groupServiceMock.Setup(x => x.Delete(It.IsAny<Group>(), CancellationToken.None))
-            .ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x => x.Delete(It.IsAny<Group>(), CancellationToken.None))
+            .Returns(_group);
         
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var group = await GetResponseValue<GroupDto>(await manager.DeleteGroup(_group.Id));
         
         // Assert
@@ -229,7 +229,7 @@ public class GroupManagerTests
     public async Task DeleteGroupShouldReturnNotFoundWhenThereIsNoGroup()
     {
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.DeleteGroup(Guid.NewGuid()));
         
         Assert.NotNull(errorMessage);
@@ -246,10 +246,10 @@ public class GroupManagerTests
     public async Task GetChargeStationReturnOk()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
         
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var chargeStation = await GetResponseValue<ChargeStationDto>(await manager.GetChargeStation(_groupId, _chargeStationId));
         
         //Assert
@@ -263,7 +263,7 @@ public class GroupManagerTests
     public async Task GetChargeStationShouldReturnNotFoundWhenThereIsNoGroup()
     {
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.GetChargeStation(Guid.NewGuid(), _chargeStationId));
         
         Assert.NotNull(errorMessage);
@@ -275,10 +275,10 @@ public class GroupManagerTests
     public async Task GetChargeStationShouldReturnNotFoundWhenThereIsNoChargeStation()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
 
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.GetChargeStation(_groupId, Guid.NewGuid()));
         
         Assert.NotNull(errorMessage);
@@ -294,7 +294,7 @@ public class GroupManagerTests
     public async Task CreateChargeStationReturnOk()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
         var request = new CreateChargeStationRequest
         {
             Name = "ChargeStation2",
@@ -302,7 +302,7 @@ public class GroupManagerTests
         };
         
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var chargeStation = await GetResponseValue<ChargeStationDto>(await manager.CreateChargeStation(_groupId, request));
         
         //Assert
@@ -315,7 +315,7 @@ public class GroupManagerTests
     public async Task CreateChargeStationShouldReturnNotFoundWhenThereIsNoGroup()
     {
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.CreateChargeStation(Guid.NewGuid(), new CreateChargeStationRequest()));
         
         Assert.NotNull(errorMessage);
@@ -327,7 +327,7 @@ public class GroupManagerTests
     public async Task CreateChargeStationShouldReturnUnprocessableWhenThereCapacityExceeded()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
         var request = new CreateChargeStationRequest
         {
             Name = "ChargeStation2",
@@ -335,7 +335,7 @@ public class GroupManagerTests
         };
         
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.CreateChargeStation(_groupId, request));
         
         Assert.NotNull(errorMessage);
@@ -355,7 +355,7 @@ public class GroupManagerTests
     public async Task UpdateChargeStationReturnOk()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
 
         var request = new UpdateChargeStationRequest
         {
@@ -363,7 +363,7 @@ public class GroupManagerTests
         };
         
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var chargeStation = await GetResponseValue<ChargeStationDto>(await manager.UpdateChargeStation(_groupId, _chargeStationId, request));
         
         //Assert
@@ -379,7 +379,7 @@ public class GroupManagerTests
     public async Task UpdateChargeStationShouldReturnNotFoundWhenThereIsNoGroup()
     {
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.UpdateChargeStation(Guid.NewGuid(), 
             _chargeStationId, new UpdateChargeStationRequest()));
         
@@ -392,10 +392,10 @@ public class GroupManagerTests
     public async Task UpdateChargeStationShouldReturnNotFoundWhenThereIsNoChargeStation()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
 
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.UpdateChargeStation(_groupId, 
             Guid.NewGuid(), new UpdateChargeStationRequest()));
         
@@ -412,10 +412,10 @@ public class GroupManagerTests
     public async Task DeleteChargeStationReturnOk()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
 
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var chargeStation = await GetResponseValue<ChargeStationDto>(await manager.DeleteChargeStation(_groupId, _chargeStationId));
         
         //Assert
@@ -430,7 +430,7 @@ public class GroupManagerTests
     public async Task DeleteChargeStationShouldReturnNotFoundWhenThereIsNoGroup()
     {
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.DeleteChargeStation(Guid.NewGuid(), _chargeStationId));
         
         Assert.NotNull(errorMessage);
@@ -442,10 +442,10 @@ public class GroupManagerTests
     public async Task DeleteChargeStationShouldReturnNotFoundWhenThereIsNoChargeStation()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
 
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.DeleteChargeStation(_groupId, Guid.NewGuid()));
         
         Assert.NotNull(errorMessage);
@@ -461,10 +461,10 @@ public class GroupManagerTests
     public async Task GetConnectorReturnOk()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
         
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var connector = await GetResponseValue<ConnectorDto>(await manager.GetConnector(_groupId, _chargeStationId, _connectorId));
         
         //Assert
@@ -478,7 +478,7 @@ public class GroupManagerTests
     public async Task GetConnectorShouldReturnNotFoundWhenThereIsNoGroup()
     {
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.GetConnector(Guid.NewGuid(), _chargeStationId, _connectorId));
         
         Assert.NotNull(errorMessage);
@@ -490,10 +490,10 @@ public class GroupManagerTests
     public async Task GetConnectorShouldReturnNotFoundWhenThereIsNoChargeStation()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
 
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.GetConnector(_groupId, Guid.NewGuid(), _connectorId));
         
         Assert.NotNull(errorMessage);
@@ -505,10 +505,10 @@ public class GroupManagerTests
     public async Task GetConnectorShouldReturnNotFoundWhenThereIsNoConnector()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
 
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.GetConnector(_groupId, _chargeStationId, 2));
         
         Assert.NotNull(errorMessage);
@@ -524,14 +524,14 @@ public class GroupManagerTests
     public async Task CreateConnectorReturnOk()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
         var request = new CreateConnectorRequest
         {
             MaxCurrentInAmps = 20
         };
         
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var connector = await GetResponseValue<ConnectorDto>(await manager.CreateConnector(_groupId, _chargeStationId, request));
         
         //Assert
@@ -545,7 +545,7 @@ public class GroupManagerTests
     public async Task CreateConnectorShouldReturnNotFoundWhenThereIsNoGroup()
     {
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.CreateConnector(Guid.NewGuid(), 
             _chargeStationId, new CreateConnectorRequest()));
         
@@ -558,10 +558,10 @@ public class GroupManagerTests
     public async Task CreateConnectorShouldReturnNotFoundWhenThereIsNoChargeStation()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
 
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.CreateConnector(_groupId, 
             Guid.NewGuid(), new CreateConnectorRequest()));
         
@@ -574,13 +574,13 @@ public class GroupManagerTests
     public async Task CreateConnectorShouldReturnUnprocessableWhenThereCapacityExceeded()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
         var request = new CreateConnectorRequest
         {
             MaxCurrentInAmps = 100
         };
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.CreateConnector(_groupId, _chargeStationId, request));
         
         Assert.NotNull(errorMessage);
@@ -612,14 +612,14 @@ public class GroupManagerTests
             }
         };
         
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(fullChargeStationGroup);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(fullChargeStationGroup);
         
         var request = new CreateConnectorRequest
         {
             MaxCurrentInAmps = 100
         };
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.CreateConnector(_groupId, _chargeStationId, request));
         
         Assert.NotNull(errorMessage);
@@ -638,14 +638,14 @@ public class GroupManagerTests
     public async Task UpdateConnectorReturnOk()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
         var request = new UpdateConnectorRequest
         {
             MaxCurrentInAmps = 20
         };
         
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var connector = await GetResponseValue<ConnectorDto>(await manager.UpdateConnector(_groupId, 
             _chargeStationId, _connectorId, request));
         
@@ -660,7 +660,7 @@ public class GroupManagerTests
     public async Task UpdateConnectorShouldReturnNotFoundWhenThereIsNoGroup()
     {
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.UpdateConnector(Guid.NewGuid(), 
             _chargeStationId, _connectorId, new UpdateConnectorRequest()));
         
@@ -673,10 +673,10 @@ public class GroupManagerTests
     public async Task UpdateConnectorShouldReturnNotFoundWhenThereIsNoChargeStation()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
 
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.UpdateConnector(_groupId, 
             Guid.NewGuid(), _connectorId, new UpdateConnectorRequest()));
         
@@ -689,10 +689,10 @@ public class GroupManagerTests
     public async Task UpdateConnectorShouldReturnNotFoundWhenThereIsNoConnector()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
 
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.UpdateConnector(_groupId, 
             _chargeStationId, 3, new UpdateConnectorRequest()));
         
@@ -705,13 +705,13 @@ public class GroupManagerTests
     public async Task UpdateConnectorShouldReturnUnprocessableWhenThereCapacityExceeded()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
         var request = new UpdateConnectorRequest
         {
             MaxCurrentInAmps = 200
         };
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.UpdateConnector(_groupId, 
             _chargeStationId, _connectorId, request));
         
@@ -755,10 +755,10 @@ public class GroupManagerTests
             }
         };
         
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(group);
         
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var connector = await GetResponseValue<ConnectorDto>(await manager.DeleteConnector(_groupId, 
             _chargeStationId, _connectorId));
         
@@ -772,7 +772,7 @@ public class GroupManagerTests
     public async Task DeleteConnectorShouldReturnNotFoundWhenThereIsNoGroup()
     {
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.DeleteConnector(Guid.NewGuid(), 
             _chargeStationId, _connectorId));
         
@@ -785,10 +785,10 @@ public class GroupManagerTests
     public async Task DeleteConnectorShouldReturnNotFoundWhenThereIsNoChargeStation()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
 
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.DeleteConnector(_groupId, 
             Guid.NewGuid(), _connectorId));
         
@@ -801,10 +801,10 @@ public class GroupManagerTests
     public async Task DeleteConnectorShouldReturnNotFoundWhenThereIsNoConnector()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
 
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.DeleteConnector(_groupId, 
             _chargeStationId, 3));
         
@@ -817,10 +817,10 @@ public class GroupManagerTests
     public async Task DeleteConnectorShouldReturnUnprocessableWhenThatIsTheLastConnector()
     {
         // Arrange
-        _groupServiceMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
+        _groupRepositoryMock.Setup(x=>x.Get(_group.Id, CancellationToken.None)).ReturnsAsync(_group);
 
         // Act
-        var manager = new GroupManager(_groupServiceMock.Object, _mapper);
+        var manager = new GroupManager(_groupRepositoryMock.Object, _mapper);
         var errorMessage = await GetResponseValue<string>(await manager.DeleteConnector(_groupId, 
             _chargeStationId, _connectorId));
         
