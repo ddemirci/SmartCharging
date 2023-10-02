@@ -1,4 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using SmartCharging.API.Exceptions;
 using SmartCharging.API.Requests.ChargeStation;
 using SmartCharging.API.Requests.Connector;
